@@ -1,13 +1,15 @@
-from app.models import user
-from app.models import song_cache
-
 """FastAPI application entry point."""
 
 from fastapi import FastAPI
 
 from app.database import Base, engine
+from app.models import user, song_cache  # noqa: F401 - register models with Base
+from app.routes import auth, tracks
 
 app = FastAPI()
+
+app.include_router(auth.router)
+app.include_router(tracks.router)
 
 
 @app.on_event("startup")
