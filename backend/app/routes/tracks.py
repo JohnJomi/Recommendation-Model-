@@ -1,6 +1,6 @@
 """Routes for fetching and caching user's top tracks from Spotify."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/tracks", tags=["tracks"])
 
 SPOTIFY_TOP_TRACKS_URL = "https://api.spotify.com/v1/me/top/tracks?limit=20"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+SPOTIFY_AUDIO_FEATURES_URL = "https://api.spotify.com/v1/audio-features"
 
 
 async def _refresh_access_token(user: User, db: Session) -> None:
@@ -56,7 +57,8 @@ async def _refresh_access_token(user: User, db: Session) -> None:
         user.access_token = access_token
         if new_refresh_token:
             user.refresh_token = new_refresh_token
-        user.token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+        # Store naive datetime; logic relies on Spotify 401 responses for refresh
+        user.token_expiry = datetime.now() + timedelta(seconds=expires_in)
 
         db.add(user)
         db.commit()
@@ -77,17 +79,32 @@ async def get_top_tracks(
             detail="User not found. Please authenticate first.",
         )
 
-    # 2. Check if token is expired (or about to expire)
-    now = datetime.utcnow()
-    if user.token_expiry <= now:
-        await _refresh_access_token(user, db)
-
-    # 4. Call Spotify API for top tracks
+    # 2. Call Spotify API for top tracks and their audio features
     async with httpx.AsyncClient() as client:
+        # Fetch top tracks with current access token
         resp = await client.get(
             SPOTIFY_TOP_TRACKS_URL,
             headers={"Authorization": f"Bearer {user.access_token}"},
         )
+        print("----- TOP TRACKS DEBUG -----")
+        print("Status Code:", resp.status_code)
+        print("Response Text:", resp.text)
+        print("Access Token Used:", user.access_token[:20], "...")
+        print("--------------------------------")
+
+        # If unauthorized, attempt a single token refresh and retry once
+        if resp.status_code == 401:
+            await _refresh_access_token(user, db)
+            resp = await client.get(
+                SPOTIFY_TOP_TRACKS_URL,
+                headers={"Authorization": f"Bearer {user.access_token}"},
+            )
+            print("----- TOP TRACKS DEBUG (RETRY) -----")
+            print("Status Code:", resp.status_code)
+            print("Response Text:", resp.text)
+            print("Access Token Used:", user.access_token[:20], "...")
+            print("--------------------------------")
+
         try:
             resp.raise_for_status()
         except httpx.HTTPStatusError:
@@ -99,7 +116,43 @@ async def get_top_tracks(
         data: dict[str, Any] = resp.json()
         items: list[dict[str, Any]] = data.get("items", [])
 
-    # 5. For each track, upsert into SongCache
+        # Collect track IDs for audio features lookup
+        track_ids: list[str] = [
+            track["id"] for track in items if track.get("id") is not None
+        ]
+        audio_features_by_id: dict[str, dict[str, Any]] = {}
+
+        if track_ids:
+            features_resp = await client.get(
+                SPOTIFY_AUDIO_FEATURES_URL,
+                params={"ids": ",".join(track_ids)},
+                headers={"Authorization": f"Bearer {user.access_token}"},
+            )
+            print("----- AUDIO FEATURES DEBUG -----")
+            print("Status Code:", features_resp.status_code)
+            print("Response Text:", features_resp.text)
+            print("--------------------------------")
+            try:
+                features_resp.raise_for_status()
+            except httpx.HTTPStatusError:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Failed to fetch audio features from Spotify.",
+                )
+
+            features_data: dict[str, Any] = features_resp.json()
+            features_list: list[dict[str, Any] | None] = features_data.get(
+                "audio_features", []
+            )
+
+            for features in features_list:
+                if not features:
+                    continue
+                feature_id = features.get("id")
+                if feature_id:
+                    audio_features_by_id[feature_id] = features
+
+    # 5. For each track, upsert into SongCache (including audio features when available)
     simplified_tracks: list[dict[str, Any]] = []
     for track in items:
         spotify_track_id: str = track["id"]
@@ -110,6 +163,7 @@ async def get_top_tracks(
         popularity = track.get("popularity")
 
         # Upsert in cache
+        features = audio_features_by_id.get(spotify_track_id)
         song = db.query(SongCache).filter(SongCache.spotify_track_id == spotify_track_id).first()
         if song is None:
             song = SongCache(
@@ -118,15 +172,15 @@ async def get_top_tracks(
                 artist=artist_name,
                 album=album,
                 popularity=popularity,
-                # Placeholder values for audio features until they are fetched elsewhere
-                danceability=0.0,
-                energy=0.0,
-                tempo=0.0,
-                valence=0.0,
-                acousticness=0.0,
-                instrumentalness=0.0,
-                loudness=0.0,
-                speechiness=0.0,
+                # Audio features (default to 0.0 if not available)
+                danceability=float(features.get("danceability", 0.0)) if features else 0.0,
+                energy=float(features.get("energy", 0.0)) if features else 0.0,
+                tempo=float(features.get("tempo", 0.0)) if features else 0.0,
+                valence=float(features.get("valence", 0.0)) if features else 0.0,
+                acousticness=float(features.get("acousticness", 0.0)) if features else 0.0,
+                instrumentalness=float(features.get("instrumentalness", 0.0)) if features else 0.0,
+                loudness=float(features.get("loudness", 0.0)) if features else 0.0,
+                speechiness=float(features.get("speechiness", 0.0)) if features else 0.0,
             )
             db.add(song)
         else:
@@ -134,6 +188,15 @@ async def get_top_tracks(
             song.artist = artist_name
             song.album = album
             song.popularity = popularity
+            if features:
+                song.danceability = float(features.get("danceability", 0.0))
+                song.energy = float(features.get("energy", 0.0))
+                song.tempo = float(features.get("tempo", 0.0))
+                song.valence = float(features.get("valence", 0.0))
+                song.acousticness = float(features.get("acousticness", 0.0))
+                song.instrumentalness = float(features.get("instrumentalness", 0.0))
+                song.loudness = float(features.get("loudness", 0.0))
+                song.speechiness = float(features.get("speechiness", 0.0))
 
         simplified_tracks.append(
             {
