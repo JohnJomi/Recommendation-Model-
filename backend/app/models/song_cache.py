@@ -1,6 +1,6 @@
 """SQLAlchemy model for caching Spotify track data and audio features."""
 
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -19,16 +19,19 @@ class SongCache(Base):
     artist = Column(String, nullable=False)
     album = Column(String, nullable=True)
     popularity = Column(Integer, nullable=True)
+    duration_ms = Column(Integer, nullable=False, default=0)
+    release_year = Column(Integer, nullable=False, default=0)
+    genres = Column(Text, nullable=True)
 
-    # Audio features (all Float, nullable=False for similarity computations)
-    danceability = Column(Float, nullable=False)
-    energy = Column(Float, nullable=False)
-    tempo = Column(Float, nullable=False)
-    valence = Column(Float, nullable=False)
-    acousticness = Column(Float, nullable=False)
-    instrumentalness = Column(Float, nullable=False)
-    loudness = Column(Float, nullable=False)
-    speechiness = Column(Float, nullable=False)
+    # Audio features (all Float, nullable=True with defaults for optional features)
+    danceability = Column(Float, nullable=True, default=0.0)
+    energy = Column(Float, nullable=True, default=0.0)
+    tempo = Column(Float, nullable=True, default=0.0)
+    valence = Column(Float, nullable=True, default=0.0)
+    acousticness = Column(Float, nullable=True, default=0.0)
+    instrumentalness = Column(Float, nullable=True, default=0.0)
+    loudness = Column(Float, nullable=True, default=0.0)
+    speechiness = Column(Float, nullable=True, default=0.0)
 
     # Cache metadata
     last_fetched_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
