@@ -4,12 +4,14 @@ from fastapi import FastAPI
 
 from app.database import Base, engine
 from app.models import user, song_cache  # noqa: F401 - register models with Base
-from app.routes import auth, tracks
+from app.routes import auth, tracks, recommendations
+from app.models import user_recommendation   
 
 app = FastAPI()
 
 app.include_router(auth.router)
 app.include_router(tracks.router)
+app.include_router(recommendations.router)
 
 
 @app.on_event("startup")

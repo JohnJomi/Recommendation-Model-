@@ -13,6 +13,7 @@ class SongCache(Base):
 
     # Primary key
     spotify_track_id = Column(String, primary_key=True)
+    
 
     # Track metadata
     title = Column(String, nullable=False)
@@ -23,15 +24,15 @@ class SongCache(Base):
     release_year = Column(Integer, nullable=False, default=0)
     genres = Column(Text, nullable=True)
 
-    # Audio features (all Float, nullable=True with defaults for optional features)
-    danceability = Column(Float, nullable=True, default=0.0)
-    energy = Column(Float, nullable=True, default=0.0)
-    tempo = Column(Float, nullable=True, default=0.0)
-    valence = Column(Float, nullable=True, default=0.0)
-    acousticness = Column(Float, nullable=True, default=0.0)
-    instrumentalness = Column(Float, nullable=True, default=0.0)
-    loudness = Column(Float, nullable=True, default=0.0)
-    speechiness = Column(Float, nullable=True, default=0.0)
+    # Audio features (all Float, nullable=False for similarity computations)
+    danceability = Column(Float, nullable=True)
+    energy = Column(Float, nullable=True)
+    tempo = Column(Float, nullable=True)
+    valence = Column(Float, nullable=True)
+    acousticness = Column(Float, nullable=True)
+    instrumentalness = Column(Float, nullable=True)
+    loudness = Column(Float, nullable=True)
+    speechiness = Column(Float, nullable=True)
 
     # Cache metadata
     last_fetched_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

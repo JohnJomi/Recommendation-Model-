@@ -16,6 +16,7 @@ class Settings:
     SPOTIFY_CLIENT_ID: str
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REDIRECT_URI: str
+    GEMINI_API_KEY: str
     ENVIRONMENT: str
 
     def __init__(self) -> None:
@@ -23,9 +24,12 @@ class Settings:
         self.SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "").strip()
         self.SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "").strip()
         self.SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "").strip()
+        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
         self.ENVIRONMENT = os.getenv("ENVIRONMENT", "development").strip()
         if not self.DATABASE_URL:
             raise ValueError("DATABASE_URL is required and must be set in the environment")
+        if not self.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY is required and must be set in the environment")
 
     @property
     def is_development(self) -> bool:
