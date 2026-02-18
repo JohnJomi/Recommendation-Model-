@@ -34,8 +34,8 @@ async def login() -> RedirectResponse:
 
 
 @router.get("/callback")
-async def callback(code: str, db: Session = Depends(get_db)) -> dict[str, str]:
-    """Handle Spotify OAuth callback, persist user, and return a clean response."""
+async def callback(code: str, db: Session = Depends(get_db)) -> RedirectResponse:
+    """Handle Spotify OAuth callback, persist user, and redirect to frontend."""
     async with httpx.AsyncClient() as client:
         # Exchange authorization code for tokens
         token_response = await client.post(
@@ -93,8 +93,5 @@ async def callback(code: str, db: Session = Depends(get_db)) -> dict[str, str]:
         db.commit()
         db.refresh(user)
 
-    return {
-        "message": "Login successful",
-        "spotify_id": spotify_id,
-        "display_name": display_name or "",
-    }
+    frontend_url = f"http://localhost:3000/dashboard?spotify_id={spotify_id}"
+    return RedirectResponse(url=frontend_url)

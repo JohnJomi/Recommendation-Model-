@@ -6,8 +6,18 @@ from app.database import Base, engine
 from app.models import user, song_cache  # noqa: F401 - register models with Base
 from app.routes import auth, tracks, recommendations
 from app.models import user_recommendation   
-
+from fastapi.middleware.cors import CORSMiddleware
+ 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(tracks.router)
