@@ -1,42 +1,170 @@
 """
 Hybrid AI recommendation generator using Gemini API with database caching.
 Handles fetching cached recommendations or generating new ones via Gemini.
+Enriches recommendations with Spotify track IDs.
 """
 
+import asyncio
 import json
 import uuid
 from datetime import datetime, timedelta
+from typing import Any
 
+import httpx
 from google import genai
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.models.user import User
 from app.models.user_recommendation import UserRecommendation
 from app.models.user_top_track import UserTopTrack
 from app.models.song_cache import SongCache
 
+SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
+SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+
+
+async def _refresh_spotify_token(user: User, db: Session) -> str:
+    """Refresh Spotify access token and return the new token."""
+    if not user.refresh_token:
+        return user.access_token
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                SPOTIFY_TOKEN_URL,
+                data={
+                    "grant_type": "refresh_token",
+                    "refresh_token": user.refresh_token,
+                },
+                auth=httpx.BasicAuth(
+                    settings.SPOTIFY_CLIENT_ID,
+                    settings.SPOTIFY_CLIENT_SECRET,
+                ),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            resp.raise_for_status()
+            token_data: dict[str, Any] = resp.json()
+            access_token: str = token_data["access_token"]
+            new_refresh_token: str | None = token_data.get("refresh_token")
+            
+            user.access_token = access_token
+            if new_refresh_token:
+                user.refresh_token = new_refresh_token
+            db.add(user)
+            db.commit()
+            return access_token
+    except Exception:
+        return user.access_token
+
+
+async def _get_spotify_track_id(
+    title: str, artist: str, access_token: str, user: User, db: Session
+) -> str | None:
+    """Search for a track on Spotify and return its ID."""
+    search_query = f"{title} {artist}"
+    
+    print(f"[SPOTIFY SEARCH] Query: {search_query}")
+    
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(
+                SPOTIFY_SEARCH_URL,
+                params={
+                    "q": search_query,
+                    "type": "track",
+                    "limit": 1,
+                },
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            
+            print(f"[SPOTIFY SEARCH] Initial Status: {resp.status_code}")
+            print(f"[SPOTIFY SEARCH] Initial Response: {resp.text}")
+            
+            if resp.status_code == 429:
+                print("[SPOTIFY SEARCH] Rate limited (429), waiting and retrying...")
+                retry_after = resp.headers.get("Retry-After", "1")
+                try:
+                    retry_seconds = int(retry_after)
+                except ValueError:
+                    retry_seconds = 1
+                
+                await asyncio.sleep(retry_seconds)
+                
+                resp = await client.get(
+                    SPOTIFY_SEARCH_URL,
+                    params={
+                        "q": search_query,
+                        "type": "track",
+                        "limit": 1,
+                    },
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+                
+                print(f"[SPOTIFY SEARCH] Retry Status: {resp.status_code}")
+                print(f"[SPOTIFY SEARCH] Retry Response: {resp.text}")
+                
+                if resp.status_code == 429:
+                    print("[SPOTIFY SEARCH] Rate limit exceeded after retry.")
+                    return None
+            
+            if resp.status_code == 401:
+                print("[SPOTIFY SEARCH] Token expired (401), refreshing...")
+                access_token = await _refresh_spotify_token(user, db)
+                print(f"[SPOTIFY SEARCH] New token obtained, retrying...")
+                
+                resp = await client.get(
+                    SPOTIFY_SEARCH_URL,
+                    params={
+                        "q": search_query,
+                        "type": "track",
+                        "limit": 1,
+                    },
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+                
+                print(f"[SPOTIFY SEARCH] Retry Status: {resp.status_code}")
+                print(f"[SPOTIFY SEARCH] Retry Response: {resp.text}")
+            
+            resp.raise_for_status()
+            data = resp.json()
+            
+            if data.get("tracks", {}).get("items"):
+                track_id = data["tracks"]["items"][0]["id"]
+                print(f"[SPOTIFY SEARCH] Track found: {track_id}")
+                return track_id
+            
+            print("[SPOTIFY SEARCH] No tracks found in response")
+            return None
+        except Exception as e:
+            print("SPOTIFY SEARCH FAILED:")
+            print("Type:", type(e).__name__)
+            print("Error:", str(e))
+            return None
+
 
 async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> list[dict]:
     """
-    Generate or fetch AI recommendations for a user.
+    Generate or fetch AI recommendations for a user with Spotify track enrichment.
     
     Steps:
     1. Check for cached recommendations (< 24 hours old)
     2. If none found, fetch user's top tracks and previous recommendations
     3. Call Gemini API to generate 15 similar songs
-    4. Store results in database
-    5. Return recommendations as JSON list
+    4. Enrich each recommendation with Spotify track ID
+    5. Store results in database
+    6. Return recommendations as JSON list
     
     Args:
         spotify_id: Spotify user ID
         db: Database session
         
     Returns:
-        List of recommendation dicts with title and artist
+        List of recommendation dicts with title, artist, and spotify_track_id
         
     Raises:
-        HTTPException: If Gemini response is invalid JSON
+        HTTPException: If critical operations fail
     """
     
     # STEP A: Check for existing recommendations (< 24 hours old)
@@ -50,11 +178,12 @@ async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> lis
         .all()
     )
     
-    if cached_recommendations:
+    if cached_recommendations and all(rec.spotify_track_id for rec in cached_recommendations):
         return [
             {
                 "title": rec.title,
                 "artist": rec.artist,
+                "spotify_track_id": rec.spotify_track_id,
             }
             for rec in cached_recommendations
         ]
@@ -169,26 +298,50 @@ Return ONLY a valid JSON array with no explanations:
             detail="Gemini API returned an empty recommendations list",
         )
     
-    # STEP E: Store results in database
+    # STEP E: Fetch user from database for Spotify enrichment
+    user: User | None = db.query(User).filter(User.spotify_id == spotify_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found in database.",
+        )
+    
+    # STEP F: Enrich recommendations with Spotify track IDs and store in database
     batch_id = str(uuid.uuid4())
+    enriched_recommendations = []
     
     for rec in recommendations:
+        title = rec.get("title", "")
+        artist = rec.get("artist", "")
+        
+        spotify_track_id = await _get_spotify_track_id(
+            title, artist, user.access_token, user, db
+        )
+        
+        if not spotify_track_id:
+            continue
+        
         new_recommendation = UserRecommendation(
             spotify_id=spotify_id,
             batch_id=batch_id,
-            title=rec.get("title", ""),
-            artist=rec.get("artist", ""),
-            spotify_track_id=None,
+            title=title,
+            artist=artist,
+            spotify_track_id=spotify_track_id,
         )
         db.add(new_recommendation)
+        
+        enriched_recommendations.append({
+            "title": title,
+            "artist": artist,
+            "spotify_track_id": spotify_track_id,
+        })
     
+    if not enriched_recommendations:
+        raise HTTPException(
+            status_code=500,
+            detail="All Spotify enrichment attempts failed.",
+        )
+
     db.commit()
-    
-    # Return new recommendations
-    return [
-        {
-            "title": rec.get("title", ""),
-            "artist": rec.get("artist", ""),
-        }
-        for rec in recommendations
-    ]
+
+    return enriched_recommendations
