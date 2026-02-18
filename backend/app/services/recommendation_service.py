@@ -188,6 +188,12 @@ async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> lis
             for rec in cached_recommendations
         ]
     
+    if cached_recommendations and not all(rec.spotify_track_id for rec in cached_recommendations):
+        db.query(UserRecommendation).filter(
+            UserRecommendation.spotify_id == spotify_id
+        ).delete()
+        db.commit()
+    
     # STEP B: Fetch user's top tracks and previously recommended songs
     top_tracks = (
         db.query(SongCache.title, SongCache.artist)
@@ -340,7 +346,7 @@ Return ONLY a valid JSON array with no explanations:
         raise HTTPException(
             status_code=500,
             detail="All Spotify enrichment attempts failed.",
-        )
+    )
 
     db.commit()
 
