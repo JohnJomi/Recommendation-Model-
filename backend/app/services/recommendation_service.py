@@ -59,11 +59,15 @@ async def _refresh_spotify_token(user: User, db: Session) -> str:
         return user.access_token
 
 
-async def _get_spotify_track_id(
+async def _enrich_recommendation_with_spotify(
     title: str, artist: str, access_token: str, user: User, db: Session
-) -> str | None:
-    """Search for a track on Spotify and return its ID."""
-    search_query = f"{title} {artist}"
+) -> dict[str, Any] | None:
+    """
+    Search Spotify for a track and return enriched metadata.
+    Returns dict with id, title, artist, release_year, duration_ms.
+    Returns None if not found.
+    """
+    search_query = f"track:{title} artist:{artist}"
     
     print(f"[SPOTIFY SEARCH] Query: {search_query}")
     
@@ -80,7 +84,6 @@ async def _get_spotify_track_id(
             )
             
             print(f"[SPOTIFY SEARCH] Initial Status: {resp.status_code}")
-            print(f"[SPOTIFY SEARCH] Initial Response: {resp.text}")
             
             if resp.status_code == 429:
                 print("[SPOTIFY SEARCH] Rate limited (429), waiting and retrying...")
@@ -103,7 +106,6 @@ async def _get_spotify_track_id(
                 )
                 
                 print(f"[SPOTIFY SEARCH] Retry Status: {resp.status_code}")
-                print(f"[SPOTIFY SEARCH] Retry Response: {resp.text}")
                 
                 if resp.status_code == 429:
                     print("[SPOTIFY SEARCH] Rate limit exceeded after retry.")
@@ -112,7 +114,6 @@ async def _get_spotify_track_id(
             if resp.status_code == 401:
                 print("[SPOTIFY SEARCH] Token expired (401), refreshing...")
                 access_token = await _refresh_spotify_token(user, db)
-                print(f"[SPOTIFY SEARCH] New token obtained, retrying...")
                 
                 resp = await client.get(
                     SPOTIFY_SEARCH_URL,
@@ -125,18 +126,39 @@ async def _get_spotify_track_id(
                 )
                 
                 print(f"[SPOTIFY SEARCH] Retry Status: {resp.status_code}")
-                print(f"[SPOTIFY SEARCH] Retry Response: {resp.text}")
             
             resp.raise_for_status()
             data = resp.json()
             
-            if data.get("tracks", {}).get("items"):
-                track_id = data["tracks"]["items"][0]["id"]
-                print(f"[SPOTIFY SEARCH] Track found: {track_id}")
-                return track_id
+            if not data.get("tracks", {}).get("items"):
+                print("[SPOTIFY SEARCH] No tracks found in response")
+                return None
             
-            print("[SPOTIFY SEARCH] No tracks found in response")
-            return None
+            track = data["tracks"]["items"][0]
+            track_id = track["id"]
+            track_name = track["name"]
+            artist_name = track["artists"][0]["name"] if track.get("artists") else "Unknown"
+            duration_ms = track.get("duration_ms", 0)
+            
+            # Extract release year from release_date
+            release_date = track.get("album", {}).get("release_date", "")
+            release_year = 0
+            if release_date:
+                try:
+                    release_year = int(release_date.split("-")[0])
+                except (ValueError, IndexError):
+                    release_year = 0
+            
+            print(f"[SPOTIFY SEARCH] Track found: {track_id}")
+            
+            return {
+                "id": track_id,
+                "title": track_name,
+                "artist": artist_name,
+                "release_year": release_year,
+                "duration_ms": duration_ms,
+            }
+        
         except Exception as e:
             print("SPOTIFY SEARCH FAILED:")
             print("Type:", type(e).__name__)
@@ -179,14 +201,31 @@ async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> lis
     )
     
     if cached_recommendations and all(rec.spotify_track_id for rec in cached_recommendations):
-        return [
-            {
-                "title": rec.title,
-                "artist": rec.artist,
-                "spotify_track_id": rec.spotify_track_id,
-            }
-            for rec in cached_recommendations
-        ]
+        # Return enriched cached recommendations with full metadata
+        enriched_results = []
+        for rec in cached_recommendations:
+            song_cache = db.query(SongCache).filter(
+                SongCache.spotify_track_id == rec.spotify_track_id
+            ).first()
+            
+            if song_cache:
+                enriched_results.append({
+                    "id": song_cache.spotify_track_id,
+                    "title": song_cache.title,
+                    "artist": song_cache.artist,
+                    "release_year": song_cache.release_year,
+                    "duration_ms": song_cache.duration_ms,
+                })
+            else:
+                enriched_results.append({
+                    "id": rec.spotify_track_id,
+                    "title": rec.title,
+                    "artist": rec.artist,
+                    "release_year": 0,
+                    "duration_ms": 0,
+                })
+        
+        return enriched_results
     
     if cached_recommendations and not all(rec.spotify_track_id for rec in cached_recommendations):
         db.query(UserRecommendation).filter(
@@ -312,7 +351,7 @@ Return ONLY a valid JSON array with no explanations:
             detail="User not found in database.",
         )
     
-    # STEP F: Enrich recommendations with Spotify track IDs and store in database
+    # STEP F: Enrich recommendations with Spotify metadata and store in database
     batch_id = str(uuid.uuid4())
     enriched_recommendations = []
     
@@ -320,33 +359,50 @@ Return ONLY a valid JSON array with no explanations:
         title = rec.get("title", "")
         artist = rec.get("artist", "")
         
-        spotify_track_id = await _get_spotify_track_id(
+        enriched_track = await _enrich_recommendation_with_spotify(
             title, artist, user.access_token, user, db
         )
         
-        if not spotify_track_id:
+        if not enriched_track:
             continue
+        
+        # Store in SongCache if not already there
+        existing_cache = db.query(SongCache).filter(
+            SongCache.spotify_track_id == enriched_track["id"]
+        ).first()
+        
+        if not existing_cache:
+            song_cache = SongCache(
+                spotify_track_id=enriched_track["id"],
+                title=enriched_track["title"],
+                artist=enriched_track["artist"],
+                release_year=enriched_track["release_year"],
+                duration_ms=enriched_track["duration_ms"],
+            )
+            db.add(song_cache)
         
         new_recommendation = UserRecommendation(
             spotify_id=spotify_id,
             batch_id=batch_id,
-            title=title,
-            artist=artist,
-            spotify_track_id=spotify_track_id,
+            title=enriched_track["title"],
+            artist=enriched_track["artist"],
+            spotify_track_id=enriched_track["id"],
         )
         db.add(new_recommendation)
         
         enriched_recommendations.append({
-            "title": title,
-            "artist": artist,
-            "spotify_track_id": spotify_track_id,
+            "id": enriched_track["id"],
+            "title": enriched_track["title"],
+            "artist": enriched_track["artist"],
+            "release_year": enriched_track["release_year"],
+            "duration_ms": enriched_track["duration_ms"],
         })
     
     if not enriched_recommendations:
         raise HTTPException(
             status_code=500,
             detail="All Spotify enrichment attempts failed.",
-    )
+        )
 
     db.commit()
 
