@@ -6,6 +6,9 @@ import Image from "next/image"
 import Navbar from "@/components/Navbar"
 import { useAuth } from "@/context/AuthContext"
 
+// Use ngrok URL for API calls (required for HTTPS)
+const API_BASE_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev"
+
 interface Track {
   id: string
   title: string
@@ -97,12 +100,15 @@ export default function Dashboard() {
 
   // Fetch tracks with caching logic when spotifyId is available
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return
+    }
+
     const spotifyId = contextSpotifyId
 
     if (!spotifyId) {
-      if (!authLoading) {
-        setError("User not authenticated. Please log in via Spotify.")
-      }
+      setError("User not authenticated. Please log in via Spotify.")
       setLoading(false)
       return
     }
@@ -127,7 +133,12 @@ export default function Dashboard() {
         setError(null)
 
         const response = await fetch(
-          `http://localhost:8000/tracks/top?spotify_id=${spotifyId}`
+          `${API_BASE_URL}/tracks/top?spotify_id=${spotifyId}`,
+          {
+            headers: {
+              'ngrok-skip-browser-warning': 'true'
+            }
+          }
         )
 
         if (!response.ok) {
@@ -174,23 +185,10 @@ export default function Dashboard() {
         : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
     }`}>
       {/* Navbar */}
-      <Navbar />
+      <Navbar isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
 
-      {/* Dark Mode Toggle - Floating Button */}
-      <button
-        onClick={() => setIsDarkMode(!isDarkMode)}
-        className={`fixed top-20 right-8 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 z-40 ${
-          isDarkMode
-            ? "bg-gray-700 text-yellow-400 hover:bg-gray-600"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-        }`}
-        title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      >
-        {isDarkMode ? "☀️" : "🌙"}
-      </button>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-8 py-16">
+      {/* Main Content - add padding-top for fixed navbar */}
+      <div className="max-w-7xl mx-auto px-8 pt-24 pb-16">
         {/* Hero Section */}
         <div className="mb-16">
           <h2 className={`text-5xl font-bold mb-3 leading-tight transition-colors duration-300 ${

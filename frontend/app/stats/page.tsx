@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import { useAuth } from "@/context/AuthContext"
@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext"
 export default function Stats() {
   const router = useRouter()
   const { spotifyId, isLoading } = useAuth()
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !spotifyId) {
@@ -17,12 +18,18 @@ export default function Stats() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center min-h-96">
+      <main className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode 
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+          : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
+      }`}>
+        <Navbar isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
+        <div className="flex items-center justify-center min-h-96 pt-24">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
-            <p className="text-gray-600">Loading...</p>
+            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${
+              isDarkMode ? "border-gray-700 border-t-amber-500" : "border-gray-200 border-t-gray-900"
+            }`}></div>
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>Loading...</p>
           </div>
         </div>
       </main>
@@ -34,11 +41,15 @@ export default function Stats() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <h1 className="text-5xl font-bold text-black mb-4">Stats</h1>
-        <p className="text-gray-600 text-lg">Coming soon...</p>
+    <main className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+        : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
+    }`}>
+      <Navbar isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
+      <div className="max-w-7xl mx-auto px-8 pt-24 pb-16">
+        <h1 className={`text-5xl font-bold mb-4 ${isDarkMode ? "text-white" : "text-black"}`}>Stats</h1>
+        <p className={`text-lg ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Coming soon...</p>
       </div>
     </main>
   )
