@@ -23,10 +23,10 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
   const isActive = (href: string) => pathname === href
 
   return (
-    <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl rounded-2xl border shadow-lg backdrop-blur-xl transition-all duration-300 ${
+    <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl rounded-2xl border shadow-lg backdrop-blur-md transition-all duration-300 ${
       isDarkMode 
-        ? "bg-gray-900/70 border-gray-700/50" 
-        : "bg-white/70 border-gray-200/50"
+        ? "bg-gray-900/80 border-gray-700/50" 
+        : "bg-white/80 border-gray-200/50"
     }`}>
       <div className="px-6">
         <div className="flex items-center justify-between h-14">

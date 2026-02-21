@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import Image from "next/image"
+import { useTheme } from "@/context/ThemeContext"
 
 // Use ngrok URL for Spotify OAuth (required for HTTPS)
 const SPOTIFY_LOGIN_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev/auth/login"
 
 export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
 
   return (
     <main className={`min-h-screen transition-colors duration-300 ${
@@ -34,7 +34,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {/* Dark Mode Toggle */}
           <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
+            onClick={toggleDarkMode}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
               isDarkMode
                 ? "bg-gray-700 text-yellow-400 hover:bg-gray-600"

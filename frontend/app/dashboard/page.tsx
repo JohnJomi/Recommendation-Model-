@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Navbar from "@/components/Navbar"
 import { useAuth } from "@/context/AuthContext"
+import { useTheme } from "@/context/ThemeContext"
 
 // Use ngrok URL for API calls (required for HTTPS)
 const API_BASE_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev"
@@ -79,11 +80,11 @@ export default function Dashboard() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { spotifyId: contextSpotifyId, setSpotifyId, isLoading: authLoading } = useAuth()
+  const { isDarkMode, toggleDarkMode } = useTheme()
 
   const [tracks, setTracks] = useState<Track[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [isFromCache, setIsFromCache] = useState(false)
 
   // Handle initial login: if spotify_id is in URL, save it to context and localStorage
@@ -185,7 +186,7 @@ export default function Dashboard() {
         : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
     }`}>
       {/* Navbar */}
-      <Navbar isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
+      <Navbar isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
       {/* Main Content - add padding-top for fixed navbar */}
       <div className="max-w-7xl mx-auto px-8 pt-24 pb-16">
