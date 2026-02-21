@@ -23,10 +23,10 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
   const isActive = (href: string) => pathname === href
 
   return (
-    <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl rounded-2xl border shadow-lg backdrop-blur-md transition-all duration-300 ${
+    <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl rounded-2xl border shadow-lg backdrop-blur-sm transition-all duration-300 ${
       isDarkMode 
         ? "bg-gray-900/80 border-gray-700/50" 
-        : "bg-white/80 border-gray-200/50"
+        : "bg-amber-50/80 border-amber-200/50"
     }`}>
       <div className="px-6">
         <div className="flex items-center justify-between h-14">
@@ -40,7 +40,7 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
               <span className="text-black font-bold text-sm">♪</span>
             </div>
             <h1 className={`text-lg font-bold transition-colors duration-200 ${
-              isDarkMode ? "text-white group-hover:text-gray-300" : "text-black group-hover:text-gray-700"
+              isDarkMode ? "text-white group-hover:text-gray-300" : "text-amber-900 group-hover:text-amber-700"
             }`}>
               MusicFlow
             </h1>
@@ -56,10 +56,10 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
                   isActive(item.href)
                     ? isDarkMode 
                       ? "bg-amber-600/20 text-amber-400" 
-                      : "bg-amber-400/20 text-amber-700"
+                      : "bg-amber-400/30 text-amber-800"
                     : isDarkMode
                       ? "text-gray-400 hover:text-white hover:bg-gray-700/50"
-                      : "text-gray-600 hover:text-black hover:bg-gray-100/50"
+                      : "text-amber-900/70 hover:text-amber-900 hover:bg-amber-200/50"
                 }`}
               >
                 {item.label}
@@ -75,7 +75,7 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
                 isDarkMode
                   ? "bg-gray-700/50 text-yellow-400 hover:bg-gray-600/50"
-                  : "bg-gray-200/50 text-gray-700 hover:bg-gray-300/50"
+                  : "bg-amber-200/50 text-amber-700 hover:bg-amber-300/50"
               }`}
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -88,7 +88,7 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
               className={`md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1 rounded-full transition-colors ${
                 isDarkMode 
                   ? "text-gray-300 hover:text-white hover:bg-gray-700/50" 
-                  : "text-gray-700 hover:text-black hover:bg-gray-100/50"
+                  : "text-amber-800 hover:text-amber-900 hover:bg-amber-200/50"
               }`}
               aria-label="Toggle menu"
             >
@@ -102,7 +102,7 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className={`md:hidden border-t py-3 ${
-            isDarkMode ? "border-gray-700/50" : "border-gray-200/50"
+            isDarkMode ? "border-gray-700/50" : "border-amber-200/50"
           }`}>
             <div className="flex flex-col gap-1">
               {navItems.map((item) => (
@@ -114,10 +114,10 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
                     isActive(item.href)
                       ? isDarkMode 
                         ? "bg-amber-600/20 text-amber-400" 
-                        : "bg-amber-400/20 text-amber-700"
+                        : "bg-amber-400/30 text-amber-800"
                       : isDarkMode
                         ? "text-gray-400 hover:text-white hover:bg-gray-700/50"
-                        : "text-gray-600 hover:text-black hover:bg-gray-100/50"
+                        : "text-amber-900/70 hover:text-amber-900 hover:bg-amber-200/50"
                   }`}
                 >
                   {item.label}

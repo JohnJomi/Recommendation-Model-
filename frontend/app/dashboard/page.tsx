@@ -183,7 +183,7 @@ export default function Dashboard() {
     <main className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
+        : "bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50"
     }`}>
       {/* Navbar */}
       <Navbar isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
@@ -193,19 +193,19 @@ export default function Dashboard() {
         {/* Hero Section */}
         <div className="mb-16">
           <h2 className={`text-5xl font-bold mb-3 leading-tight transition-colors duration-300 ${
-            isDarkMode ? "text-white" : "text-black"
+            isDarkMode ? "text-white" : "text-amber-950"
           }`}>
             Your Top <br />
             <span className={`bg-clip-text text-transparent transition-colors duration-300 ${
               isDarkMode
                 ? "bg-gradient-to-r from-amber-500 to-amber-600"
-                : "bg-gradient-to-r from-amber-400 to-amber-500"
+                : "bg-gradient-to-r from-amber-500 to-orange-500"
             }`}>
               Tracks
             </span>
           </h2>
           <p className={`text-lg max-w-2xl transition-colors duration-300 ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
+            isDarkMode ? "text-gray-400" : "text-amber-800/70"
           }`}>
             Discover and explore your most played songs on Spotify
           </p>
@@ -216,9 +216,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-center min-h-96">
             <div className="flex flex-col items-center gap-4">
               <div className={`w-12 h-12 border-4 border-t-4 rounded-full animate-spin transition-colors duration-300 ${
-                isDarkMode ? "border-gray-700 border-t-amber-500" : "border-gray-200 border-t-amber-400"
+                isDarkMode ? "border-gray-700 border-t-amber-500" : "border-amber-200 border-t-amber-500"
               }`}></div>
-              <p className={`transition-colors duration-300 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+              <p className={`transition-colors duration-300 ${isDarkMode ? "text-gray-400" : "text-amber-800/70"}`}>
                 Loading your tracks...
               </p>
             </div>
@@ -271,11 +271,11 @@ export default function Dashboard() {
                 className={`rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 group shadow-sm border ${
                   isDarkMode
                     ? "bg-gray-800 border-gray-700 hover:shadow-xl hover:shadow-gray-900/50"
-                    : "bg-white border-gray-100"
+                    : "bg-white/80 border-amber-200 hover:shadow-amber-200/50"
                 }`}
               >
                 {/* Album Image */}
-                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
+                <div className="relative w-full aspect-square bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden">
                   {track.album_image ? (
                     <Image
                       src={track.album_image}
@@ -284,8 +284,10 @@ export default function Dashboard() {
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400">
-                      <span className="text-gray-500 text-4xl">🎵</span>
+                    <div className={`w-full h-full flex items-center justify-center ${
+                      isDarkMode ? "bg-gradient-to-br from-gray-700 to-gray-800" : "bg-gradient-to-br from-amber-200 to-amber-300"
+                    }`}>
+                      <span className="text-4xl">🎵</span>
                     </div>
                   )}
                 </div>
@@ -294,14 +296,14 @@ export default function Dashboard() {
                 <div className="p-5">
                   {/* Title */}
                   <h3 className={`text-base font-bold truncate mb-1 transition-colors duration-300 ${
-                    isDarkMode ? "text-white" : "text-black"
+                    isDarkMode ? "text-white" : "text-amber-950"
                   }`}>
                     {track.title}
                   </h3>
 
                   {/* Artist */}
                   <p className={`text-sm truncate mb-3 transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
+                    isDarkMode ? "text-gray-400" : "text-amber-800/70"
                   }`}>
                     {track.artist || "Unknown Artist"}
                   </p>
@@ -309,7 +311,7 @@ export default function Dashboard() {
                   {/* Album Name */}
                   {track.album_name && (
                     <p className={`text-xs truncate mb-4 transition-colors duration-300 ${
-                      isDarkMode ? "text-gray-500" : "text-gray-500"
+                      isDarkMode ? "text-gray-500" : "text-amber-600/70"
                     }`}>
                       {track.album_name}
                     </p>
@@ -317,13 +319,13 @@ export default function Dashboard() {
 
                   {/* Metadata */}
                   <div className={`space-y-2 text-sm transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
+                    isDarkMode ? "text-gray-400" : "text-amber-800/70"
                   }`}>
                     {/* Duration */}
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Duration</span>
                       <span className={`font-bold transition-colors duration-300 ${
-                        isDarkMode ? "text-gray-100" : "text-gray-900"
+                        isDarkMode ? "text-gray-100" : "text-amber-900"
                       }`}>
                         {formatDuration(track.duration_ms)}
                       </span>
@@ -333,7 +335,7 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Released</span>
                       <span className={`font-bold transition-colors duration-300 ${
-                        isDarkMode ? "text-gray-100" : "text-gray-900"
+                        isDarkMode ? "text-gray-100" : "text-amber-900"
                       }`}>
                         {track.release_year || "—"}
                       </span>

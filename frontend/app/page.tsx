@@ -13,11 +13,11 @@ export default function Home() {
     <main className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
+        : "bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50"
     }`}>
       {/* Header */}
       <div className={`flex items-center justify-between px-8 py-6 border-b transition-colors duration-300 ${
-        isDarkMode ? "border-gray-700" : "border-gray-100"
+        isDarkMode ? "border-gray-700" : "border-amber-200"
       }`}>
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
@@ -27,7 +27,7 @@ export default function Home() {
           }`}>
             <span className="text-black font-bold text-lg">♪</span>
           </div>
-          <h1 className={`text-2xl font-bold transition-colors duration-300 ${isDarkMode ? "text-white" : "text-black"}`}>
+          <h1 className={`text-2xl font-bold transition-colors duration-300 ${isDarkMode ? "text-white" : "text-amber-900"}`}>
             MusicFlow
           </h1>
         </div>
@@ -38,7 +38,7 @@ export default function Home() {
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
               isDarkMode
                 ? "bg-gray-700 text-yellow-400 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                : "bg-amber-200 text-amber-700 hover:bg-amber-300"
             }`}
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
@@ -49,7 +49,7 @@ export default function Home() {
             className={`px-6 py-2 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 inline-block ${
               isDarkMode
                 ? "bg-white text-black hover:bg-gray-200"
-                : "bg-black text-white hover:bg-gray-800"
+                : "bg-amber-900 text-white hover:bg-amber-800"
             }`}
           >
             Sign In
@@ -63,19 +63,19 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
           <div>
             <h2 className={`text-5xl lg:text-6xl font-bold mb-6 leading-tight transition-colors duration-300 ${
-              isDarkMode ? "text-white" : "text-black"
+              isDarkMode ? "text-white" : "text-amber-950"
             }`}>
               Discover Music <br />
               <span className={`bg-clip-text text-transparent transition-colors duration-300 ${
                 isDarkMode
                   ? "bg-gradient-to-r from-amber-500 to-amber-600"
-                  : "bg-gradient-to-r from-amber-400 to-amber-500"
+                  : "bg-gradient-to-r from-amber-500 to-orange-500"
               }`}>
                 Like Never Before
               </span>
             </h2>
             <p className={`text-xl mb-8 max-w-md transition-colors duration-300 ${
-              isDarkMode ? "text-gray-400" : "text-gray-600"
+              isDarkMode ? "text-gray-400" : "text-amber-800/70"
             }`}>
               AI-powered recommendations tailored to your taste. Connect with Spotify and let our smart algorithm find your next favorite track.
             </p>
@@ -137,25 +137,25 @@ export default function Home() {
               <div className={`rounded-2xl p-5 shadow-md border transition-all duration-300 ${
                 isDarkMode
                   ? "bg-gray-800 border-gray-700 hover:shadow-lg hover:bg-gray-750"
-                  : "bg-white border-gray-100 hover:shadow-lg"
+                  : "bg-white/80 border-amber-200 hover:shadow-lg"
               }`}>
                 <p className={`text-xs font-semibold mb-3 transition-colors duration-300 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                  isDarkMode ? "text-gray-400" : "text-amber-700"
                 }`}>
                   Your Top Tracks
                 </p>
                 <div className="flex items-end gap-1 h-12">
                   <div className={`w-2 h-6 rounded-sm transition-colors duration-300 ${
-                    isDarkMode ? "bg-gray-600" : "bg-gray-300"
+                    isDarkMode ? "bg-gray-600" : "bg-amber-300"
                   }`}></div>
                   <div className={`w-2 h-8 rounded-sm transition-colors duration-300 ${
-                    isDarkMode ? "bg-gray-500" : "bg-gray-400"
+                    isDarkMode ? "bg-gray-500" : "bg-amber-400"
                   }`}></div>
                   <div className={`w-2 h-5 rounded-sm transition-colors duration-300 ${
-                    isDarkMode ? "bg-gray-600" : "bg-gray-300"
+                    isDarkMode ? "bg-gray-600" : "bg-amber-300"
                   }`}></div>
                   <div className={`w-2 h-10 rounded-sm transition-colors duration-300 ${
-                    isDarkMode ? "bg-amber-500" : "bg-black"
+                    isDarkMode ? "bg-amber-500" : "bg-amber-600"
                   }`}></div>
                 </div>
               </div>
@@ -163,10 +163,10 @@ export default function Home() {
               <div className={`rounded-2xl p-5 shadow-md transition-all duration-300 ${
                 isDarkMode
                   ? "bg-gray-700 text-white hover:shadow-lg hover:bg-gray-650"
-                  : "bg-black text-white hover:shadow-lg"
+                  : "bg-amber-900 text-white hover:shadow-lg hover:bg-amber-800"
               }`}>
                 <p className={`text-xs font-semibold mb-3 transition-colors duration-300 ${
-                  isDarkMode ? "text-gray-300" : "text-gray-400"
+                  isDarkMode ? "text-gray-300" : "text-amber-300"
                 }`}>
                   Recommendations
                 </p>
@@ -186,7 +186,7 @@ export default function Home() {
           <div className={`rounded-2xl p-8 shadow-sm border transition-all duration-300 hover:shadow-md ${
             isDarkMode
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-100"
+              : "bg-white/80 border-amber-200"
           }`}>
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors duration-300 overflow-hidden bg-black`}>
               <Image 
@@ -198,12 +198,12 @@ export default function Home() {
               />
             </div>
             <h3 className={`text-xl font-bold mb-3 transition-colors duration-300 ${
-              isDarkMode ? "text-white" : "text-black"
+              isDarkMode ? "text-white" : "text-amber-950"
             }`}>
               Spotify Integration
             </h3>
             <p className={`transition-colors duration-300 ${
-              isDarkMode ? "text-gray-400" : "text-gray-600"
+              isDarkMode ? "text-gray-400" : "text-amber-800/70"
             }`}>
               Connect seamlessly with your Spotify account. We analyze your top tracks and listening patterns.
             </p>
@@ -212,10 +212,10 @@ export default function Home() {
           <div className={`rounded-2xl p-8 shadow-sm border transition-all duration-300 hover:shadow-md ${
             isDarkMode
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-100"
+              : "bg-white/80 border-amber-200"
           }`}>
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors duration-300 ${
-              isDarkMode ? "bg-blue-900" : "bg-blue-100"
+              isDarkMode ? "bg-blue-900" : "bg-amber-100"
             }`}>
               <Image 
                 src="/images/Google_Gemini_icon_2025.svg-2.png" 
@@ -226,12 +226,12 @@ export default function Home() {
               />
             </div>
             <h3 className={`text-xl font-bold mb-3 transition-colors duration-300 ${
-              isDarkMode ? "text-white" : "text-black"
+              isDarkMode ? "text-white" : "text-amber-950"
             }`}>
               AI Powered
             </h3>
             <p className={`transition-colors duration-300 ${
-              isDarkMode ? "text-gray-400" : "text-gray-600"
+              isDarkMode ? "text-gray-400" : "text-amber-800/70"
             }`}>
               Advanced algorithms learn your music taste and suggest tracks you'll actually love.
             </p>
@@ -240,20 +240,20 @@ export default function Home() {
           <div className={`rounded-2xl p-8 shadow-sm border transition-all duration-300 hover:shadow-md ${
             isDarkMode
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-100"
+              : "bg-white/80 border-amber-200"
           }`}>
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors duration-300 ${
-              isDarkMode ? "bg-amber-900" : "bg-amber-100"
+              isDarkMode ? "bg-amber-900" : "bg-amber-200"
             }`}>
               <span className="text-2xl">⚡</span>
             </div>
             <h3 className={`text-xl font-bold mb-3 transition-colors duration-300 ${
-              isDarkMode ? "text-white" : "text-black"
+              isDarkMode ? "text-white" : "text-amber-950"
             }`}>
               Real Time
             </h3>
             <p className={`transition-colors duration-300 ${
-              isDarkMode ? "text-gray-400" : "text-gray-600"
+              isDarkMode ? "text-gray-400" : "text-amber-800/70"
             }`}>
               Get fresh recommendations updated daily. Discover new music that matches your evolving taste.
             </p>
@@ -264,7 +264,7 @@ export default function Home() {
         <div className={`rounded-3xl p-12 text-center shadow-lg transition-colors duration-300 ${
           isDarkMode
             ? "bg-gradient-to-r from-gray-800 to-gray-900"
-            : "bg-gradient-to-r from-black to-gray-900"
+            : "bg-gradient-to-r from-amber-900 to-amber-950"
         }`}>
           <h3 className={`text-3xl font-bold mb-4 transition-colors duration-300 ${
             isDarkMode ? "text-amber-100" : "text-white"
