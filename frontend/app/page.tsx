@@ -3,12 +3,11 @@
 import { useState } from "react"
 import Image from "next/image"
 
+// Use ngrok URL for Spotify OAuth (required for HTTPS)
+const SPOTIFY_LOGIN_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev/auth/login"
+
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(false)
-
-  const handleSpotifyLogin = () => {
-    window.location.href = "http://localhost:8000/auth/login"
-  }
 
   return (
     <main className={`min-h-screen transition-colors duration-300 ${
@@ -45,16 +44,16 @@ export default function Home() {
           >
             {isDarkMode ? "☀️" : "🌙"}
           </button>
-          <button
-            onClick={handleSpotifyLogin}
-            className={`px-6 py-2 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 ${
+          <a
+            href={SPOTIFY_LOGIN_URL}
+            className={`px-6 py-2 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 inline-block ${
               isDarkMode
                 ? "bg-white text-black hover:bg-gray-200"
                 : "bg-black text-white hover:bg-gray-800"
             }`}
           >
             Sign In
-          </button>
+          </a>
         </div>
       </div>
 
@@ -80,16 +79,16 @@ export default function Home() {
             }`}>
               AI-powered recommendations tailored to your taste. Connect with Spotify and let our smart algorithm find your next favorite track.
             </p>
-            <button
-              onClick={handleSpotifyLogin}
-              className={`px-8 py-4 font-bold rounded-full transition-all duration-200 text-lg transform hover:scale-105 hover:shadow-xl ${
+            <a
+              href={SPOTIFY_LOGIN_URL}
+              className={`px-8 py-4 font-bold rounded-full transition-all duration-200 text-lg transform hover:scale-105 hover:shadow-xl inline-block text-center ${
                 isDarkMode
                   ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600"
                   : "bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400"
               }`}
             >
               Get Started with Spotify
-            </button>
+            </a>
           </div>
 
           {/* Feature Cards Grid */}
@@ -277,16 +276,16 @@ export default function Home() {
           }`}>
             Join thousands of music lovers using AI recommendations
           </p>
-          <button
-            onClick={handleSpotifyLogin}
-            className={`px-8 py-3 font-bold rounded-full transition-all duration-200 transform hover:scale-105 hover:shadow-lg ${
+          <a
+            href={SPOTIFY_LOGIN_URL}
+            className={`px-8 py-3 font-bold rounded-full transition-all duration-200 transform hover:scale-105 hover:shadow-lg inline-block ${
               isDarkMode
                 ? "bg-amber-500 text-black hover:bg-amber-400"
                 : "bg-amber-400 text-black hover:bg-amber-300"
             }`}
           >
             Login with Spotify
-          </button>
+          </a>
         </div>
       </div>
     </main>
