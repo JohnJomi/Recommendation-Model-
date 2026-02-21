@@ -210,6 +210,16 @@ async def get_top_tracks(
         )
         db.add(user_top)
 
+        album_image = ""
+        album_images = album_obj.get("images") or []
+        if album_images and len(album_images) > 0:
+            album_image = album_images[0].get("url", "")
+
+        spotify_url = ""
+        external_urls = track.get("external_urls") or {}
+        if external_urls:
+            spotify_url = external_urls.get("spotify", "")
+
         simplified_tracks.append(
             {
                 "id": spotify_track_id,
@@ -218,6 +228,9 @@ async def get_top_tracks(
                 "popularity": popularity,
                 "release_year": release_year,
                 "duration_ms": duration_ms,
+                "album_name": album,
+                "album_image": album_image,
+                "spotify_url": spotify_url,
             }
         )
 
