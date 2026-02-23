@@ -64,7 +64,7 @@ async def _enrich_recommendation_with_spotify(
 ) -> dict[str, Any] | None:
     """
     Search Spotify for a track and return enriched metadata.
-    Returns dict with id, title, artist, release_year, duration_ms.
+    Returns dict with id, title, artist, release_year, duration_ms, album_image, spotify_url.
     Returns None if not found.
     """
     search_query = f"track:{title} artist:{artist}"
@@ -149,6 +149,15 @@ async def _enrich_recommendation_with_spotify(
                 except (ValueError, IndexError):
                     release_year = 0
             
+            # Extract album image safely
+            album_image = None
+            album_images = track.get("album", {}).get("images", [])
+            if album_images and len(album_images) > 0:
+                album_image = album_images[0].get("url")
+            
+            # Extract Spotify URL safely
+            spotify_url = track.get("external_urls", {}).get("spotify")
+            
             print(f"[SPOTIFY SEARCH] Track found: {track_id}")
             
             return {
@@ -157,6 +166,8 @@ async def _enrich_recommendation_with_spotify(
                 "artist": artist_name,
                 "release_year": release_year,
                 "duration_ms": duration_ms,
+                "album_image": album_image,
+                "spotify_url": spotify_url,
             }
         
         except Exception as e:
@@ -215,6 +226,8 @@ async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> lis
                     "artist": song_cache.artist,
                     "release_year": song_cache.release_year,
                     "duration_ms": song_cache.duration_ms,
+                    "album_image": song_cache.album_image,
+                    "spotify_url": song_cache.spotify_url,
                 })
             else:
                 enriched_results.append({
@@ -223,6 +236,8 @@ async def generate_or_fetch_recommendations(spotify_id: str, db: Session) -> lis
                     "artist": rec.artist,
                     "release_year": 0,
                     "duration_ms": 0,
+                    "album_image": None,
+                    "spotify_url": None,
                 })
         
         return enriched_results
@@ -378,6 +393,8 @@ Return ONLY a valid JSON array with no explanations:
                 artist=enriched_track["artist"],
                 release_year=enriched_track["release_year"],
                 duration_ms=enriched_track["duration_ms"],
+                album_image=enriched_track.get("album_image"),
+                spotify_url=enriched_track.get("spotify_url"),
             )
             db.add(song_cache)
         
@@ -396,6 +413,8 @@ Return ONLY a valid JSON array with no explanations:
             "artist": enriched_track["artist"],
             "release_year": enriched_track["release_year"],
             "duration_ms": enriched_track["duration_ms"],
+            "album_image": enriched_track.get("album_image"),
+            "spotify_url": enriched_track.get("spotify_url"),
         })
     
     if not enriched_recommendations:

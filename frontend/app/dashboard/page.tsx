@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Image from "next/image"
 import Navbar from "@/components/Navbar"
+import PageContainer from "@/components/PageContainer"
+import TrackCard from "@/components/TrackCard"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
 
@@ -167,16 +168,16 @@ export default function Dashboard() {
     fetchTracks()
   }, [contextSpotifyId, authLoading])
 
+  const handleCardClick = (spotifyUrl: string) => {
+    window.open(spotifyUrl, "_blank")
+  }
+
   const formatDuration = (durationMs: number): string => {
     if (!durationMs) return "0:00"
     const minutes = Math.floor(durationMs / 60000)
     const seconds = Math.floor((durationMs % 60000) / 1000)
     const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds
     return `${minutes}:${formattedSeconds}`
-  }
-
-  const handleCardClick = (spotifyUrl: string) => {
-    window.open(spotifyUrl, "_blank")
   }
 
   return (
@@ -265,84 +266,19 @@ export default function Dashboard() {
         {!loading && !error && tracks.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {tracks.map((track) => (
-              <div
+              <TrackCard
                 key={track.id}
+                id={track.id}
+                title={track.title}
+                artist={track.artist}
+                release_year={track.release_year}
+                duration_ms={track.duration_ms}
+                album_image={track.album_image}
+                album_name={track.album_name}
+                spotify_url={track.spotify_url}
+                isDarkMode={isDarkMode}
                 onClick={() => handleCardClick(track.spotify_url)}
-                className={`rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 group shadow-sm border ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 hover:shadow-xl hover:shadow-gray-900/50"
-                    : "bg-white/80 border-amber-200 hover:shadow-amber-200/50"
-                }`}
-              >
-                {/* Album Image */}
-                <div className="relative w-full aspect-square bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden">
-                  {track.album_image ? (
-                    <Image
-                      src={track.album_image}
-                      alt={track.album_name || track.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className={`w-full h-full flex items-center justify-center ${
-                      isDarkMode ? "bg-gradient-to-br from-gray-700 to-gray-800" : "bg-gradient-to-br from-amber-200 to-amber-300"
-                    }`}>
-                      <span className="text-4xl">🎵</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Track Info */}
-                <div className="p-5">
-                  {/* Title */}
-                  <h3 className={`text-base font-bold truncate mb-1 transition-colors duration-300 ${
-                    isDarkMode ? "text-white" : "text-amber-950"
-                  }`}>
-                    {track.title}
-                  </h3>
-
-                  {/* Artist */}
-                  <p className={`text-sm truncate mb-3 transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-400" : "text-amber-800/70"
-                  }`}>
-                    {track.artist || "Unknown Artist"}
-                  </p>
-
-                  {/* Album Name */}
-                  {track.album_name && (
-                    <p className={`text-xs truncate mb-4 transition-colors duration-300 ${
-                      isDarkMode ? "text-gray-500" : "text-amber-600/70"
-                    }`}>
-                      {track.album_name}
-                    </p>
-                  )}
-
-                  {/* Metadata */}
-                  <div className={`space-y-2 text-sm transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-400" : "text-amber-800/70"
-                  }`}>
-                    {/* Duration */}
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Duration</span>
-                      <span className={`font-bold transition-colors duration-300 ${
-                        isDarkMode ? "text-gray-100" : "text-amber-900"
-                      }`}>
-                        {formatDuration(track.duration_ms)}
-                      </span>
-                    </div>
-
-                    {/* Release Year */}
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Released</span>
-                      <span className={`font-bold transition-colors duration-300 ${
-                        isDarkMode ? "text-gray-100" : "text-amber-900"
-                      }`}>
-                        {track.release_year || "—"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              />
             ))}
           </div>
         )}

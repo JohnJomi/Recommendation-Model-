@@ -23,6 +23,10 @@ class SongCache(Base):
     duration_ms = Column(Integer, nullable=False, default=0)
     release_year = Column(Integer, nullable=False, default=0)
     genres = Column(Text, nullable=True)
+    
+    # Spotify enrichment
+    album_image = Column(String, nullable=True)
+    spotify_url = Column(String, nullable=True)
 
     # Audio features (all Float, nullable=False for similarity computations)
     danceability = Column(Float, nullable=True)
