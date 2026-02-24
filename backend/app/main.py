@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from app.database import Base, engine
 from app.models import user, song_cache  # noqa: F401 - register models with Base
-from app.routes import auth, tracks, recommendations
+from app.routes import auth, tracks, recommendations, artists
 from app.models import user_recommendation   
 from fastapi.middleware.cors import CORSMiddleware
  
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(tracks.router)
 app.include_router(recommendations.router)
+app.include_router(artists.router)
 
 
 @app.on_event("startup")

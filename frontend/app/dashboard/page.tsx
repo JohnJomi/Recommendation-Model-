@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Navbar from "@/components/Navbar"
-import PageContainer from "@/components/PageContainer"
 import TrackCard from "@/components/TrackCard"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"

@@ -15,7 +15,7 @@ export default function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
 
   const navItems = [
     { label: "Top Tracks", href: "/dashboard" },
-    { label: "Stats", href: "/stats" },
+    { label: "Top Artists", href: "/artists" },
     { label: "AI Recommendations", href: "/recommendations" },
     { label: "Settings", href: "/settings" },
   ]
