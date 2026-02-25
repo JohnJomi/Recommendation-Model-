@@ -93,5 +93,5 @@ async def callback(code: str, db: Session = Depends(get_db)) -> RedirectResponse
         db.commit()
         db.refresh(user)
 
-    frontend_url = f"http://localhost:3000/dashboard?spotify_id={spotify_id}"
+    frontend_url = f"{settings.FRONTEND_URL}/dashboard?spotify_id={spotify_id}"
     return RedirectResponse(url=frontend_url)
