@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react"
 import TrackCard from "@/components/TrackCard"
-
-// Use ngrok URL for API calls (required for HTTPS)
-const API_BASE_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev"
+import { API_BASE_URL, isNgrokUrl } from "@/lib/env"
 
 /**
  * Recommendation interface matching backend response
@@ -88,10 +86,14 @@ const clearCache = (spotifyId: string): void => {
  * Fetch recommendations from backend
  */
 const fetchRecommendations = async (spotifyId: string): Promise<Recommendation[]> => {
+  const headers: Record<string, string> = {}
+  
+  if (isNgrokUrl()) {
+    headers["ngrok-skip-browser-warning"] = "true"
+  }
+
   const response = await fetch(`${API_BASE_URL}/recommendations?spotify_id=${spotifyId}`, {
-    headers: {
-      "ngrok-skip-browser-warning": "true",
-    },
+    headers,
     credentials: "include",
   })
 

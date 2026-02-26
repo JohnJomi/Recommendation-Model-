@@ -2,12 +2,11 @@
 
 import Image from "next/image"
 import { useTheme } from "@/context/ThemeContext"
-
-// Use ngrok URL for Spotify OAuth (required for HTTPS)
-const SPOTIFY_LOGIN_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev/auth/login"
+import { getAuthLoginUrl } from "@/lib/env"
 
 export default function Home() {
   const { isDarkMode, toggleDarkMode } = useTheme()
+  const SPOTIFY_LOGIN_URL = getAuthLoginUrl()
 
   return (
     <main className={`min-h-screen transition-colors duration-300 ${

@@ -6,8 +6,7 @@ import Navbar from "@/components/Navbar"
 import ArtistCard from "@/components/ArtistCard"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
-
-const API_BASE_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev"
+import { API_BASE_URL, isNgrokUrl } from "@/lib/env"
 
 interface Artist {
   id: string
@@ -104,9 +103,9 @@ export default function TopArtists() {
         const response = await fetch(
           `${API_BASE_URL}/artists/top?spotify_id=${spotifyId}`,
           {
-            headers: {
+            headers: isNgrokUrl() ? {
               "ngrok-skip-browser-warning": "true",
-            },
+            } : {}
           }
         )
 

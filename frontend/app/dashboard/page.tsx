@@ -6,9 +6,7 @@ import Navbar from "@/components/Navbar"
 import TrackCard from "@/components/TrackCard"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
-
-// Use ngrok URL for API calls (required for HTTPS)
-const API_BASE_URL = "https://aliza-overcomplacent-isabell.ngrok-free.dev"
+import { API_BASE_URL, isNgrokUrl } from "@/lib/env"
 
 interface Track {
   id: string
@@ -136,9 +134,9 @@ export default function Dashboard() {
         const response = await fetch(
           `${API_BASE_URL}/tracks/top?spotify_id=${spotifyId}`,
           {
-            headers: {
+            headers: isNgrokUrl() ? {
               'ngrok-skip-browser-warning': 'true'
-            }
+            } : {}
           }
         )
 
