@@ -1,3 +1,7 @@
+## Repository Status
+
+This repository is actively maintained.
+
 # Music Recommender - AI-Powered Spotify Recommendations
 
 A full-stack web application that provides personalized music recommendations using AI (Google Gemini), integrated with Spotify OAuth authentication. Users can discover their top tracks, top artists, and get AI-powered song recommendations tailored to their listening habits.
