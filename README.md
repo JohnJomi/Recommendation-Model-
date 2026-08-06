@@ -113,6 +113,7 @@ npm run dev
 3. Get your **Client ID** and **Client Secret**
 4. Add Redirect URI: `http://localhost:8000/auth/callback`
 5. Update `backend/.env` with these credentials
+6. Make sure to get proper access from Spotify 
 
 ### 5. Google Gemini API Setup
 
