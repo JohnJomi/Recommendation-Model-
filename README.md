@@ -8,7 +8,7 @@ A full-stack web application that provides personalized music recommendations us
 
 ## Features
 
-- **Spotify OAuth Authentication**: Secure login with Spotify account
+- **Spotify OAuth Authentication**: Secure login with Spotify account ( Auth 2.0 )
 - **Top Tracks**: View and explore your most played songs on Spotify
 - **Top Artists**: Discover your most followed artists
 - **AI Recommendations**: Get personalized track recommendations powered by Google Gemini
